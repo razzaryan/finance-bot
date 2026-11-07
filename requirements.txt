@@ -1,0 +1,9 @@
+aiogram==3.31.0
+SQLAlchemy==2.1.8
+sqlmodel==0.0.48
+APScheduler==3.11.3
+python-dotenv==1.2.4
+tzdata==2026.6
+
+# dev / test
+pytest==9.2.0

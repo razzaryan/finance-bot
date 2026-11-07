@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# rahasia & data pribadi
+.env
+data/
+*.db
+*.db-wal
+*.db-shm
+*.csv
+
+# hasil sementara
+testout.txt
+e2e_out.txt
+check_encoding.py
