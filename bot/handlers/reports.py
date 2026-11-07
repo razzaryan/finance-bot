@@ -1,4 +1,4 @@
-"""/saldo, /laporan, /terakhir, /cari, /rekap, /export, /histori."""
+﻿"""/saldo, /laporan, /terakhir, /cari, /rekap, /export, /histori."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from aiogram.filters import Command, CommandObject
 from aiogram.types import BufferedInputFile, Message
 
 from bot.formatting import (
+    answer_chunked,
     category_name,
     chunk_message,
     day_label,
@@ -55,23 +56,23 @@ def register(router: Router) -> None:
         income, expense = get_totals(ctx.session, user.id, start, end)
         accounts = list_accounts(ctx.session, user.id)
 
-        lines = ["💰 <b>Saldo</b>", "━━━━━━━━━━━━━━━━━━", f"<b>{money(total)}</b>", ""]
+        lines = ["ðŸ’° <b>Saldo</b>", "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”", f"<b>{money(total)}</b>", ""]
         if len(accounts) > 1:
             for account in accounts:
                 lines.append(
-                    f"• {esc(account.name)}: {money(account_balance(ctx.session, user, account))}"
+                    f"â€¢ {esc(account.name)}: {money(account_balance(ctx.session, user, account))}"
                 )
             lines.append("")
 
         lines += [
-            f"📅 <b>{esc(month_label(now.year, now.month))}</b>",
+            f"ðŸ“… <b>{esc(month_label(now.year, now.month))}</b>",
             f"Masuk   {money(income)}",
             f"Keluar  {money(expense)}",
             f"Selisih {money(income - expense)}",
             "",
             f"Total {count_transactions(ctx.session, user.id)} transaksi tercatat.",
         ]
-        await message.answer("\n".join(lines))
+        await answer_chunked(message, "\n".join(lines))
 
     @router.message(Command("laporan", "report", "l"))
     async def cmd_laporan(message: Message, command: CommandObject, ctx) -> None:
@@ -91,7 +92,7 @@ def register(router: Router) -> None:
 
         if summary.tx_count == 0:
             await message.answer(
-                f"📊 <b>{esc(month_label(year, month))}</b>\n"
+                f"ðŸ“Š <b>{esc(month_label(year, month))}</b>\n"
                 "Belum ada transaksi di bulan ini.\n\n"
                 "Kirim misalnya: <code>kopi 18rb</code>"
             )
@@ -107,7 +108,7 @@ def register(router: Router) -> None:
             tx_count=summary.tx_count,
             comparison=comparison_text(summary.expense, summary.prev_expense),
         )
-        await message.answer(text)
+        await answer_chunked(message, text)
 
     @router.message(Command("rekap", "hari"))
     async def cmd_rekap(message: Message, ctx) -> None:
@@ -116,8 +117,8 @@ def register(router: Router) -> None:
         income, expense, items = daily_summary(ctx.session, user, today, tz_name=user.timezone)
 
         lines = [
-            f"🧾 <b>Rekap {esc(day_label(today))}</b>",
-            "━━━━━━━━━━━━━━━━━━",
+            f"ðŸ§¾ <b>Rekap {esc(day_label(today))}</b>",
+            "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”",
             f"Masuk   {money(income)}",
             f"Keluar  {money(expense)}",
             f"Selisih {money(income - expense)}",
@@ -129,7 +130,7 @@ def register(router: Router) -> None:
                 note = (trx.note or "").strip() or "(tanpa catatan)"
                 cat = category_name(category) if category else "Tanpa Kategori"
                 lines.append(
-                    f"• {esc(note)} — {signed_money(trx.amount, trx.kind)} <i>({esc(cat)})</i>"
+                    f"â€¢ {esc(note)} â€” {signed_money(trx.amount, trx.kind)} <i>({esc(cat)})</i>"
                 )
         else:
             lines += ["", "Belum ada transaksi hari ini."]
@@ -142,7 +143,7 @@ def register(router: Router) -> None:
                 continue
             ratio = used / limit
             if ratio >= 0.8:
-                icon = "🚨" if ratio >= 1 else "⚠️"
+                icon = "ðŸš¨" if ratio >= 1 else "âš ï¸"
                 alerts.append(
                     f"{icon} {esc(category_name(category))} {progress_bar(ratio)} "
                     f"{money(used)}/{money(limit)}"
@@ -150,7 +151,7 @@ def register(router: Router) -> None:
         if alerts:
             lines += [""] + alerts
 
-        await message.answer("\n".join(lines))
+        await answer_chunked(message, "\n".join(lines))
 
     @router.message(Command("terakhir", "last", "riwayat"))
     async def cmd_terakhir(message: Message, command: CommandObject, ctx) -> None:
@@ -161,16 +162,16 @@ def register(router: Router) -> None:
 
         items = recent_transactions(ctx.session, user.id, limit)
         if not items:
-            await message.answer("Belum ada transaksi. Mulai dengan <code>kopi 18rb</code> 🙂")
+            await message.answer("Belum ada transaksi. Mulai dengan <code>kopi 18rb</code> ðŸ™‚")
             return
 
-        lines = [f"🧾 <b>{len(items)} transaksi terakhir</b>", "━━━━━━━━━━━━━━━━━━"]
+        lines = [f"ðŸ§¾ <b>{len(items)} transaksi terakhir</b>", "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"]
         for trx, category in items:
             note = (trx.note or "").strip() or "(tanpa catatan)"
             cat = category_name(category) if category else "Tanpa Kategori"
             lines.append(
-                f"{signed_money(trx.amount, trx.kind)} · {esc(note)}\n"
-                f"   {esc(cat)} · {esc(format_date(trx.occurred_at, user.timezone))} · "
+                f"{signed_money(trx.amount, trx.kind)} Â· {esc(note)}\n"
+                f"   {esc(cat)} Â· {esc(format_date(trx.occurred_at, user.timezone))} Â· "
                 f"<code>#{trx.id}</code>"
             )
         lines += ["", "Hapus dengan <code>/hapus &lt;id&gt;</code> atau /undo untuk yang terakhir."]
@@ -195,15 +196,15 @@ def register(router: Router) -> None:
 
         total = sum(trx.amount for trx, _ in items)
         lines = [
-            f"🔍 <b>Hasil cari '{esc(keyword)}'</b> (maks 15)",
-            "━━━━━━━━━━━━━━━━━━",
+            f"ðŸ” <b>Hasil cari '{esc(keyword)}'</b> (maks 15)",
+            "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”",
         ]
         for trx, category in items:
             note = (trx.note or "").strip() or "(tanpa catatan)"
             cat = category_name(category) if category else "Tanpa Kategori"
             lines.append(
-                f"{signed_money(trx.amount, trx.kind)} · {esc(note)}\n"
-                f"   {esc(cat)} · {esc(format_date(trx.occurred_at, user.timezone))} · "
+                f"{signed_money(trx.amount, trx.kind)} Â· {esc(note)}\n"
+                f"   {esc(cat)} Â· {esc(format_date(trx.occurred_at, user.timezone))} Â· "
                 f"<code>#{trx.id}</code>"
             )
         lines += ["", f"Total nilai hasil: {money(total)}"]
@@ -232,13 +233,14 @@ def register(router: Router) -> None:
 
         await message.answer_document(
             BufferedInputFile(data, filename=f"keuangan-{year}-{month:02d}.csv"),
-            caption=f"📄 {count} transaksi — {month_label(year, month)}\nBuka dengan Excel/Google Sheets.",
+            caption=f"ðŸ“„ {count} transaksi â€” {month_label(year, month)}\nBuka dengan Excel/Google Sheets.",
         )
 
     @router.message(Command("histori", "riwayat_bulan"))
     async def cmd_history(message: Message, ctx) -> None:
         items = monthly_history(ctx.session, ctx.user, 6, tz_name=ctx.user.timezone)
-        lines = ["📈 <b>6 bulan terakhir</b>", "━━━━━━━━━━━━━━━━━━"]
+        lines = ["ðŸ“ˆ <b>6 bulan terakhir</b>", "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"]
         for label, income, expense in items:
-            lines.append(f"<b>{esc(label)}</b>\n  masuk {money(income)} · keluar {money(expense)}")
+            lines.append(f"<b>{esc(label)}</b>\n  masuk {money(income)} Â· keluar {money(expense)}")
         await message.answer("\n".join(lines))
+

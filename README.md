@@ -10,6 +10,11 @@ kemarin bensin 25.000 → otomatis tanggal kemarin
 makan 35k @Makan   → kategori dipaksa
 ```
 
+> 📖 **Baru pertama kali? Baca [TUTORIAL.md](TUTORIAL.md)** — panduan langkah
+> demi langkah dari membuat bot sampai pemakaian harian.
+>
+> ⚡ Sudah paham? Langsung ke [Mulai cepat](#2-mulai-cepat).
+
 ---
 
 ## 1. Fitur
@@ -175,21 +180,43 @@ finance-bot/
 ## 6. Testing
 
 ```powershell
-# semua test
+# semua test (184 test)
 python -m pytest
 
 # hanya parser (cepat, tanpa database)
 python -m pytest tests/test_parser.py -v
 
-# lihat contoh output laporan tanpa Telegram
-python scripts/demo_report.py
-
-# pastikan bot bisa boot (tidak menyentuh jaringan)
-python scripts/smoke_boot.py
+# test regresi bug yang pernah ditemukan
+python -m pytest tests/test_regression.py -v
 ```
 
 Test mencakup **end-to-end**: menjalankan dispatcher aiogram sungguhan dengan
 Telegram palsu, jadi alur `pesan masuk → parse → simpan → balas` ikut diuji.
+
+### QA probe (audit mandiri)
+
+Skrip di `scripts/qa_*.py` adalah audit adversarial — mencari bug, bukan
+membuktikan kode benar. Jalankan semuanya:
+
+```powershell
+python scripts/qa_probe.py            # parser & nominal
+python scripts/qa_probe_db.py         # integritas & konsistensi angka
+python scripts/qa_probe_message.py    # HTML valid & batas 4096 char
+python scripts/qa_probe_kategori.py   # akurasi klasifikasi kategori
+python scripts/qa_probe_robust.py     # pesan beruntun, DB terkunci, input aneh
+python scripts/qa_probe_boot_real.py  # bot start nyata & shutdown bersih
+```
+
+Semua harus melaporkan `TOTAL TEMUAN: 0` dan `AKURASI: 100.0%`.
+
+### Alat bantu lain
+
+```powershell
+python scripts/demo_report.py        # lihat contoh laporan tanpa Telegram
+python scripts/smoke_boot.py         # cek bot bisa boot (tanpa jaringan)
+python scripts/simulate_session.py   # simulasi sesi pemakaian nyata
+python scripts/probe_parser.py       # uji parser dengan kalimat sehari-hari
+```
 
 ---
 

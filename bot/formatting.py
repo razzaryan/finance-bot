@@ -59,24 +59,119 @@ def category_name(category) -> str:
     return f"{emoji} {name}".strip()
 
 
+_TAG_TOKEN_RE = re.compile(r"<(/?)([a-zA-Z][\w-]*)([^>]*)>")
+_VOID_TAGS = {"br"}
+
+
+def _split_html_line(line: str, limit: int) -> list[str]:
+    """Pecah satu baris panjang tanpa merusak tag HTML.
+
+    Tag yang masih terbuka di akhir potongan otomatis ditutup, lalu dibuka
+    kembali di potongan berikutnya. Hasilnya selalu HTML valid dan setiap
+    potongan <= limit.
+    """
+    if len(line) <= limit:
+        return [line]
+
+    pieces: list[str] = []
+    stack: list[str] = []          # tag yang sedang terbuka
+    buf: list[str] = []
+    buf_len = 0
+
+    def closers() -> str:
+        return "".join(f"</{t}>" for t in reversed(stack))
+
+    def openers() -> str:
+        return "".join(f"<{t}>" for t in stack)
+
+    def flush() -> None:
+        """Tutup potongan sekarang, mulai potongan baru dengan tag yang sama."""
+        nonlocal buf, buf_len
+        payload = "".join(buf)
+        tail = closers()
+        if len(payload) + len(tail) <= limit:
+            payload += tail
+        elif payload:
+            pieces.append(payload)
+            payload = ""
+        if payload:
+            pieces.append(payload)
+        buf = [openers()]
+        buf_len = len(buf[0])
+
+    def add_text(text: str) -> None:
+        """Tambahkan teks polos, dipecah bila tidak muat."""
+        nonlocal buf_len
+        while text:
+            room = limit - buf_len - len(closers())
+            if room <= 0:
+                flush()
+                continue
+            take = text[:room]
+            buf.append(take)
+            buf_len += len(take)
+            text = text[room:]
+
+    pos = 0
+    while pos < len(line):
+        match = _TAG_TOKEN_RE.search(line, pos)
+
+        if match is None:
+            add_text(line[pos:])
+            break
+
+        add_text(line[pos : match.start()])
+
+        raw_tag = match.group(0)
+        closing = match.group(1) == "/"
+        name = match.group(2).lower()
+
+        # tag mentah harus ikut masuk. Kalau tidak muat, potong dulu.
+        if buf_len + len(raw_tag) + len(closers()) > limit and buf_len > len(openers()):
+            flush()
+
+        buf.append(raw_tag)
+        buf_len += len(raw_tag)
+
+        if not closing and name not in _VOID_TAGS:
+            stack.append(name)
+        elif closing and stack and stack[-1] == name:
+            stack.pop()
+
+        pos = match.end()
+
+    if buf:
+        payload = "".join(buf)
+        tail = closers()
+        if len(payload) + len(tail) <= limit:
+            payload += tail
+        if payload:
+            pieces.append(payload)
+
+    return [p for p in pieces if p]
+
+
 def chunk_message(text: str, limit: int = SAFE_LIMIT) -> list[str]:
-    """Potong pesan panjang tanpa memotong tag HTML di tengah."""
+    """Potong pesan panjang jadi <= limit char, HTML tetap valid.
+
+    Setiap potongan boleh dibaca Telegram sendiri-sendiri: tag yang terbuka
+    ditutup di akhir potongan dan dibuka lagi di awal potongan berikutnya.
+    """
     text = text or ""
     if len(text) <= limit:
-        return [text]
+        return [text] if text else [""]
 
     chunks: list[str] = []
     current: list[str] = []
     length = 0
 
     for line in text.split("\n"):
-        # baris tunggal kepanjangan -> potong paksa
-        while len(line) > limit:
-            head, line = line[:limit], line[limit:]
+        if len(line) > limit:
             if current:
                 chunks.append("\n".join(current))
                 current, length = [], 0
-            chunks.append(head)
+            chunks.extend(_split_html_line(line, limit))
+            continue
 
         addition = len(line) + (1 if current else 0)
         if length + addition > limit:
@@ -88,7 +183,7 @@ def chunk_message(text: str, limit: int = SAFE_LIMIT) -> list[str]:
 
     if current:
         chunks.append("\n".join(current))
-    return chunks
+    return [c for c in chunks if c]
 
 
 def transaction_line(trx, category, tz_name: str, show_date: bool = False) -> str:
@@ -204,3 +299,14 @@ _TAG_RE = re.compile(r"</?[a-zA-Z][^>]*>")
 def plain(text: str) -> str:
     """Buang tag HTML, untuk keperluan CSV/log."""
     return html.unescape(_TAG_RE.sub("", text))
+
+
+async def answer_chunked(message, text: str, limit: int = SAFE_LIMIT) -> None:
+    """Kirim pesan, dipecah otomatis kalau melebihi batas Telegram.
+
+    Semua handler wajib lewat sini supaya pesan panjang tidak ditolak
+    Telegram (gejalanya: bot diam saja tanpa error yang terlihat).
+    """
+    for chunk in chunk_message(text, limit):
+        if chunk:
+            await message.answer(chunk)

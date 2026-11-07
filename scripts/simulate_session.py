@@ -12,11 +12,17 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 from aiogram.methods import TelegramMethod
-from aiogram.types import Chat, Message, Update, User as TgUser
+from aiogram.types import Chat, Message, Update
+from aiogram.types import User as TgUser
 
 from bot.db import create_db_engine, init_db
 from bot.handlers import get_routers
-from bot.middlewares import AuthMiddleware, DatabaseMiddleware, ErrorMiddleware, UserMiddleware
+from bot.middlewares import (
+    AuthMiddleware,
+    DatabaseMiddleware,
+    ErrorMiddleware,
+    UserMiddleware,
+)
 
 OWNER = 424242
 TZ = "Asia/Jakarta"

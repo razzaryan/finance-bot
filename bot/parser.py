@@ -35,14 +35,17 @@ MULTIPLIERS = {
 # --- deteksi angka -----------------------------------------------------------
 
 NUM_CHARS = r"\d[\d.,]*"
-# Satu regex untuk "18rb", "18 rb", "1,5 jt", "10mio".
-# `(?!\w)` penting supaya "25000 makan" tidak dianggap 25.000 * 1.000.000.
-# `\s*` (bukan \s+) supaya bentuk nempel dan berspasi ditangani sama.
+# Satu regex untuk "18rb", "18 rb", "1,5 jt", "10mio", dan "kopi18rb".
+# Lookbehind hanya melarang angka/titik/koma sebelumnya (bukan huruf), supaya
+# bentuk nempel seperti "kopi18rb" tetap terbaca. `(?!\w)` setelah suffix
+# mencegah "25000 makan" dianggap 25.000 * 1.000.000.
 _SUFFIX_RE = re.compile(
-    rf"(?<![\w.,])(?P<num>{NUM_CHARS})\s*(?P<suffix>ribu|juta|mio|rb|jt|k|m)(?!\w)",
+    rf"(?<![\d.,])(?P<num>{NUM_CHARS})\s*(?P<suffix>ribu|juta|mio|rb|jt|k|m)(?!\w)",
     re.IGNORECASE,
 )
-_PLAIN_NUM_RE = re.compile(rf"(?<![\w.,])(?P<num>{NUM_CHARS})(?![\w.,])")
+# Angka polos: boleh nempel setelah huruf ("kopi25000"), tapi tidak boleh
+# langsung diikuti huruf/titik/koma (supaya "2x" bukan nominal).
+_PLAIN_NUM_RE = re.compile(rf"(?<![\d.,])(?P<num>{NUM_CHARS})(?![\w.,])")
 # Prefix mata uang ("Rp", "Rp.", "IDR") dibuang dulu supaya "Rp25.000" terbaca.
 _CURRENCY_PREFIX_RE = re.compile(r"(?<!\w)(?:rp|idr)\.?\s*(?=\d)", re.IGNORECASE)
 _CURRENCY_LEFTOVER_RE = re.compile(r"(?<!\w)(?:rp|idr)\.?(?!\w)", re.IGNORECASE)

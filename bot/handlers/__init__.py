@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from aiogram import Router
 
-from bot.handlers import budgets, categories, misc, reports, transactions
+from bot.handlers import budgets, categories, fallback, misc, reports, transactions
 
 _BUILDERS = (
     ("misc", misc.register),
@@ -17,6 +17,8 @@ _BUILDERS = (
     ("reports", reports.register),
     ("categories", categories.register),
     ("budgets", budgets.register),
+    # WAJIB paling akhir: menangkap semua pesan yang tidak dikenali.
+    ("fallback", fallback.register),
 )
 
 

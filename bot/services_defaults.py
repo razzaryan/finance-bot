@@ -1,4 +1,9 @@
-"""Setup user baru: akun default + kategori bawaan."""
+"""Setup user baru: akun default + kategori bawaan.
+
+Keyword di sini menentukan akurasi klasifikasi otomatis. Daftar dibuat untuk
+pengeluaran sehari-hari Indonesia: kata benda (makanan, bahan), merek umum
+(gojek, indomaret), dan sinonim.
+"""
 
 from __future__ import annotations
 
@@ -11,28 +16,89 @@ DEFAULT_ACCOUNTS: list[tuple[str, str]] = [
 ]
 
 DEFAULT_EXPENSE_CATEGORIES: list[tuple[str, str, str]] = [
-    ("Makan", "🍜", "makan,minum,kopi,sarapan,siang,malam,jajan,snack,resto,warteg,warung,ngopi,cemilan,es,bakso,nasi,ayam,mie,roti,gofood,grabfood,shopeefood"),
-    ("Transport", "🛵", "bensin,transport,ojek,gojek,grab,maxim,taksi,bus,kereta,mrt,lrt,krl,parkir,tol,servis,tambal,ban"),
-    ("Belanja", "🛒", "belanja,beli,indomaret,alfamart,supermarket,pasar,sembako,sayur,beras,telur,minyak,galon,sabun,shampo,tissue,deterjen"),
-    ("Tagihan", "🧾", "tagihan,listrik,pln,air,pdam,internet,wifi,indihome,pulsa,paket,kuota,token,tv,kos,sewa,langganan,netflix,spotify,listrik"),
-    ("Kesehatan", "💊", "obat,sehat,dokter,klinik,rumah sakit,rs,vitamin,apotek,gym,fitness"),
-    ("Pendidikan", "📚", "buku,kursus,sekolah,les,seminar,udemy,kelas,education"),
-    ("Hiburan", "🎮", "hiburan,game,nonton,bioskop,konser,liburan,travel,hotel,tiket,wisata,spotify,youtube"),
-    ("Cicilan", "🏦", "cicilan,kredit,utang,hutang,paylater,kpr,leasing,angsuran"),
-    ("Transfer", "🔁", "transfer,tf,topup,isi saldo"),
-    ("Sedekah", "🤝", "sedekah,zakat,donasi,infaq,amal,shodaqoh"),
-    ("Rumah", "🏠", "rumah,kos,kontrakan,perbaikan,renovasi,perabot,galon,gas"),
+    (
+        "Makan",
+        "🍜",
+        "makan,minum,kopi,teh,jus,boba,susu,sarapan,siang,malam,jajan,snack,"
+        "cemilan,camilan,kue,roti,martabak,sate,bakso,mie,nasi,ayam,soto,"
+        "pecel,rawon,gado,warung,warteg,resto,restoran,cafe,kafe,ngopi,"
+        "gofood,grabfood,shopeefood,es,boba,bubble,donat,pizza,burger,"
+        "kentang,seblak,cilok,pangsit,siomay,ketoprak,bubur",
+    ),
+    (
+        "Transport",
+        "🛵",
+        "bensin,pertalite,pertamax,pertamina,solar,transport,ojek,gojek,grab,"
+        "maxim,taksi,angkot,bus,kereta,mrt,lrt,krl,tol,parkir,servis,tambal,"
+        "ban,oli,tarif,travel,pesawat,tiket,tambalban,bengkel,stnk,pajak",
+    ),
+    (
+        "Belanja",
+        "🛒",
+        "belanja,beli,indomaret,alfamart,supermarket,minimarket,pasar,"
+        "sembako,sayur,buah,beras,telur,gula,minyak,garam,tepung,galon,"
+        "sabun,shampo,sampo,tissue,deterjen,sikat,odol,pasta,pembalut,"
+        "popok,baju,celana,sepatu,tas,shopee,tokopedia,lazada",
+    ),
+    (
+        "Tagihan",
+        "🧾",
+        "tagihan,listrik,pln,token,pulsa,paket,kuota,data,air,pdam,"
+        "internet,wifi,indihome,firstmedia,tv,kabel,kos,kontrakan,sewa,"
+        "langganan,iuran,netflix,spotify,youtube,vidio,disney,"
+        "asuransi,bpjs,pajak,retribusi",
+    ),
+    (
+        "Kesehatan",
+        "💊",
+        "obat,sehat,dokter,klinik,rumah sakit,rs,vitamin,apotek,farmasi,"
+        "gym,fitness,salon,potong rambut,periksa,lab,masker",
+    ),
+    (
+        "Pendidikan",
+        "📚",
+        "buku,kursus,sekolah,les,seminar,udemy,kelas,education,print,"
+        "fotokopi,atk,pulpen,modul,spp,uang gedung",
+    ),
+    (
+        "Hiburan",
+        "🎮",
+        "hiburan,game,nonton,bioskop,konser,liburan,travel,hotel,penginapan,"
+        "wisata,tiket,topup game,steam",
+    ),
+    (
+        "Cicilan",
+        "🏦",
+        "cicilan,kredit,utang,hutang,paylater,kpr,leasing,angsuran,"
+        "pinjaman,spaylater,shopee paylater",
+    ),
+    (
+        "Sedekah",
+        "🤝",
+        "sedekah,zakat,donasi,infaq,amal,shodaqoh,sumbangan,derma",
+    ),
+    (
+        "Rumah",
+        "🏠",
+        "rumah,perbaikan,renovasi,perabot,cat,lemari,service ac,ac,kipas,"
+        "lampu,gas,gass",
+    ),
+    (
+        "Perawatan Diri",
+        "💅",
+        "skincare,parfum,deodoran,body,cream,serum,gunting,nail",
+    ),
     ("Lain-lain", "📦", ""),
 ]
 
 DEFAULT_INCOME_CATEGORIES: list[tuple[str, str, str]] = [
-    ("Gaji", "💼", "gaji,gajian,salary,payroll,upah"),
-    ("Bonus", "🎁", "bonus,thr,insentif,reward,komisi,honor"),
-    ("Freelance", "💻", "freelance,proyek,project,sampingan,client,jasa"),
-    ("Bisnis", "🏪", "bisnis,jualan,toko,usaha,omset,dagang"),
-    ("Investasi", "📈", "investasi,dividen,bunga,saham,reksadana,profit,trading,crypto"),
-    ("Penjualan", "🛍", "jual,terjual,olx,tokped,shopee"),
-    ("Hadiah", "🎀", "hadiah,kado,dikasih,diberi,arisan,warisan,menang"),
+    ("Gaji", "💼", "gaji,gajian,salary,payroll,upah,gaji pokok"),
+    ("Bonus", "🎁", "bonus,thr,insentif,reward,komisi,honor,lembur"),
+    ("Freelance", "💻", "freelance,proyek,project,sampingan,client,jasa,upwork,fiverr"),
+    ("Bisnis", "🏪", "bisnis,jualan,toko,usaha,omset,dagang,untung"),
+    ("Investasi", "📈", "investasi,dividen,bunga,saham,reksadana,profit,trading,crypto,bibit"),
+    ("Penjualan", "🛍", "jual,terjual,olx,tokped,shopee,garasi"),
+    ("Hadiah", "🎀", "hadiah,kado,dikasih,diberi,arisan,warisan,menang,cashback,refund"),
     ("Lainnya", "➕", ""),
 ]
 
