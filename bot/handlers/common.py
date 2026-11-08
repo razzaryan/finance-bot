@@ -127,8 +127,8 @@ def budget_note_for(session, user, category) -> str | None:
     return None
 
 
-async def reply_saved(message: Message, session, user, text: str, forced_kind: str | None = None) -> None:
-    """Alur lengkap: parse, simpan, balas konfirmasi + peringatan anggaran."""
+async def reply_saved(message: Message, session, user, text: str, forced_kind: str | None = None, ctx=None) -> None:
+    """Alur lengkap: parse, simpan, tulis CSV, balas konfirmasi + alert anggaran."""
     result, added, category, kind = save_from_text(
         session, user, text, message.message_id, forced_kind
     )
@@ -138,6 +138,24 @@ async def reply_saved(message: Message, session, user, text: str, forced_kind: s
             f"ℹ️ Transaksi #{added.transaction.id} sudah tercatat sebelumnya, tidak dobel."
         )
         return
+
+    # Tulis ke file CSV ledger (kalau fitur ini aktif).
+    if ctx is not None:
+        path = ctx.ledger_file()
+        if path is not None:
+            try:
+                from bot.csvsync import append_transaction
+                from bot.ledger import get_default_account
+
+                append_transaction(
+                    path,
+                    added.transaction,
+                    category,
+                    get_default_account(session, user.id),
+                    user.timezone,
+                )
+            except Exception:  # pragma: no cover - jangan gagalkan pencatatan
+                logger.exception("Gagal menulis ke CSV ledger")
 
     await message.answer(confirmation_text(result, added.transaction, category, kind, user.timezone))
 

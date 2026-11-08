@@ -26,6 +26,7 @@ from bot.timeutil import (
     day_bounds,
     format_datetime_local,
     local_naive_to_utc,
+    local_now,
     month_bounds,
 )
 
@@ -468,8 +469,10 @@ def budget_status(
 
 
 def budget_alerts(session: Session, user: User, *, tz_name: str | None = None) -> list[str]:
-    today_local = datetime.now()
-    rows = budget_status(session, user, today_local.year, today_local.month, tz_name=tz_name)
+    # WAJIB pakai zona user, bukan jam server: server UTC akan salah bulan
+    # untuk user WIB pada 00:00-07:00 tanggal 1.
+    now_local = local_now(tz_name or user.timezone)
+    rows = budget_status(session, user, now_local.year, now_local.month, tz_name=tz_name)
     alerts: list[str] = []
     for category, limit, used in rows:
         if limit <= 0:
@@ -556,6 +559,8 @@ def delete_category(session: Session, user: User, name: str) -> Category:
 
 def export_csv(session: Session, user: User, start: datetime, end: datetime) -> tuple[bytes, int]:
     """CSV transaksi satu periode (UTF-8 + BOM supaya rapi di Excel)."""
+    from bot.csvsync import sanitize_cell
+
     items = transactions_in_range(session, user.id, start, end)
     buffer = io.StringIO()
     writer = csv.writer(buffer, lineterminator="\n")
@@ -568,10 +573,10 @@ def export_csv(session: Session, user: User, start: datetime, end: datetime) -> 
                 trx.id,
                 format_datetime_local(trx.occurred_at, user.timezone),
                 "masuk" if trx.kind == TYPE_INCOME else "keluar",
-                category.name if category else "",
-                accounts.get(trx.account_id, ""),
+                sanitize_cell(category.name if category else ""),
+                sanitize_cell(accounts.get(trx.account_id, "")),
                 trx.amount,
-                trx.note,
+                sanitize_cell(trx.note),
             ]
         )
     data = ("\ufeff" + buffer.getvalue()).encode("utf-8")
@@ -582,11 +587,11 @@ def monthly_history(
     session: Session, user: User, months: int = 6, *, tz_name: str | None = None
 ) -> list[tuple[str, int, int]]:
     """Ringkasan beberapa bulan terakhir (termasuk bulan ini)."""
-    from bot.timeutil import MONTH_NAMES, add_months
+    from bot.timeutil import MONTH_NAMES, add_months, local_now
 
     tz = tz_name or user.timezone
     out: list[tuple[str, int, int]] = []
-    cursor = datetime.now()
+    cursor = local_now(tz)
     year, month = cursor.year, cursor.month
     for _ in range(months):
         start, end = month_bounds(year, month, tz)

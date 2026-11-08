@@ -30,6 +30,7 @@ makan 35k @Makan   → kategori dipaksa
 | Riwayat & pencarian | `/terakhir`, `/cari` |
 | Hapus salah catat | `/undo`, `/hapus <id>` |
 | Export CSV (buka di Excel) | `/export` |
+| **CSV ledger otomatis** — semua transaksi langsung masuk file CSV | `/ledger` |
 | Rekap otomatis tiap hari | scheduler |
 
 **Parser input** mendukung `18rb`, `18rb`, `18 ribu`, `18k`, `5jt`, `5 juta`,
@@ -144,7 +145,16 @@ kemarin bensin 25000
 /budget
 /budget hapus Makan
 /export               CSV bulan ini
+/ledger               CSV semua transaksi (file selalu ter-update)
 ```
+
+### CSV otomatis
+Setiap transaksi langsung ditambahkan ke `data/exports/ledger-<id>.csv`.
+File ini bisa dibuka di Excel kapan saja tanpa perlu `/export`. Setelah
+`/undo` atau `/hapus`, baris di file ikut terhapus.
+
+Catatan keamanan: sel yang diawali `=`, `+`, `-`, `@` diberi awalan `'`
+supaya Excel tidak menjalankannya sebagai formula (CSV injection).
 
 ### Anggaran
 Setelah transaksi, bot otomatis memberi peringatan bila kategori sudah

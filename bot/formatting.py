@@ -61,6 +61,36 @@ def category_name(category) -> str:
 
 _TAG_TOKEN_RE = re.compile(r"<(/?)([a-zA-Z][\w-]*)([^>]*)>")
 _VOID_TAGS = {"br"}
+_ENTITY_RE = re.compile(r"&(?:amp|lt|gt|quot|#\d+|#x[0-9a-fA-F]+);")
+
+
+def _safe_cut(text: str, room: int) -> int:
+    """Pilih titik potong yang tidak membelah entitas HTML (&amp;, &lt;, ...).
+
+    Telegram menolak pesan berisi entitas rusak seperti "&am", sehingga bot
+    akan diam total. Kalau potongan jatuh di tengah entitas, mundurkan
+    sedikit supaya entitas utuh di potongan berikutnya.
+    """
+    if room <= 0:
+        return 0
+    if room >= len(text):
+        return len(text)
+
+    window = text[:room]
+    amp = window.rfind("&")
+    if amp == -1:
+        return room
+
+    # sudah lengkap di dalam window?
+    if ";" in window[amp:]:
+        return room
+
+    # Entitas mulai tepat di awal sisa teks dan tidak muat: minta pemanggil
+    # untuk memulai potongan baru (0 = flush), jangan potong entitasnya.
+    if amp == 0:
+        return 0
+
+    return amp
 
 
 def _split_html_line(line: str, limit: int) -> list[str]:
@@ -102,15 +132,28 @@ def _split_html_line(line: str, limit: int) -> list[str]:
     def add_text(text: str) -> None:
         """Tambahkan teks polos, dipecah bila tidak muat."""
         nonlocal buf_len
+        guard = 0
         while text:
             room = limit - buf_len - len(closers())
             if room <= 0:
                 flush()
+                guard += 1
+                if guard > 10000:  # pengaman: tidak boleh menggantung
+                    buf.append(text[:1])
+                    buf_len += 1
+                    text = text[1:]
                 continue
-            take = text[:room]
-            buf.append(take)
-            buf_len += len(take)
-            text = text[room:]
+            take = _safe_cut(text, room)
+            if take <= 0:
+                # entitas tidak muat di sisa potongan -> mulai potongan baru
+                if buf_len > len(openers()):
+                    flush()
+                    continue
+                # buffer masih kosong: paksa konsumsi minimal 1 karakter
+                take = 1
+            buf.append(text[:take])
+            buf_len += take
+            text = text[take:]
 
     pos = 0
     while pos < len(line):

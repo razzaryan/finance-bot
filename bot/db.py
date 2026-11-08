@@ -10,13 +10,18 @@ from sqlmodel import Session, SQLModel, create_engine
 
 
 def create_db_engine(db_path: str | Path) -> Engine:
-    """Buat engine SQLite. Path khusus ':memory:' didukung untuk test."""
+    """Buat engine SQLite. Path khusus ':memory:' didukung untuk test.
+
+    `timeout` di connect_args adalah busy timeout SQLite (detik). Tanpa ini,
+    transaksi tulis yang bertabrakan dengan job backup/rekap langsung gagal
+    dengan "database is locked".
+    """
     if str(db_path) == ":memory:":
         from sqlalchemy.pool import StaticPool
 
         engine = create_engine(
             "sqlite://",
-            connect_args={"check_same_thread": False},
+            connect_args={"check_same_thread": False, "timeout": 30},
             poolclass=StaticPool,
         )
     else:
@@ -24,7 +29,7 @@ def create_db_engine(db_path: str | Path) -> Engine:
         path.parent.mkdir(parents=True, exist_ok=True)
         engine = create_engine(
             f"sqlite:///{path.as_posix()}",
-            connect_args={"check_same_thread": False},
+            connect_args={"check_same_thread": False, "timeout": 30},
         )
 
     @event.listens_for(engine, "connect")
@@ -32,6 +37,8 @@ def create_db_engine(db_path: str | Path) -> Engine:
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA busy_timeout=30000")
         cursor.close()
 
     return engine

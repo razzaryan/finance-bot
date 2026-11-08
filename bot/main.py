@@ -39,6 +39,8 @@ COMMANDS = [
     BotCommand(command="kategori", description="Kelola kategori"),
     BotCommand(command="budget", description="Anggaran bulanan"),
     BotCommand(command="export", description="Export CSV bulanan"),
+    BotCommand(command="ledger", description="Unduh CSV semua transaksi"),
+    BotCommand(command="histori", description="Tren 6 bulan"),
     BotCommand(command="id", description="Lihat user id"),
 ]
 
@@ -61,7 +63,9 @@ def build_dispatcher(settings: Settings, engine) -> Dispatcher:
     dp.update.outer_middleware(ErrorMiddleware())
     dp.update.outer_middleware(AuthMiddleware(settings.owner_ids))
     dp.update.outer_middleware(DatabaseMiddleware(engine))
-    dp.update.outer_middleware(UserMiddleware(settings.timezone))
+    dp.update.outer_middleware(
+        UserMiddleware(settings.timezone, settings.export_dir)
+    )
 
     for router in get_routers():
         dp.include_router(router)

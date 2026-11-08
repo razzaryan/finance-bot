@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from aiogram import BaseMiddleware
@@ -21,13 +23,38 @@ class Context:
     user: Any
     owner_ids: tuple[int, ...]
     tz_name: str
+    export_dir: Path | None = None
+
+    def ledger_file(self) -> Path | None:
+        """Lokasi file CSV ledger hidup untuk user ini.
+
+        Memakai telegram_id (bukan id database) supaya nama file tetap sama
+        walau database dibangun ulang.
+        """
+        from bot.csvsync import ledger_path
+
+        if self.export_dir is None or self.user is None:
+            return None
+        return ledger_path(self.export_dir, self.user.telegram_id)
 
 
 class DatabaseMiddleware(BaseMiddleware):
-    """Buka satu Session per update lalu tutup setelah selesai."""
+    """Buka satu Session per update lalu tutup setelah selesai.
+
+    SQLite hanya mengizinkan SATU penulis. aiogram memproses update secara
+    bersamaan, jadi tanpa serialisasi:
+      - pool koneksi habis (QueuePool size 5 + overflow 10), lalu
+        `sqlalchemy.exc.TimeoutError` setelah menunggu 30 detik;
+      - panggilan blocking itu menahan event loop, sehingga bot terlihat
+        menggantung saat Telegram mengirim banyak update sekaligus
+        (mis. setelah bot lama mati / backlog).
+    Kunci ini membuat update diproses berurutan. Untuk bot pribadi, query
+    berjalan dalam hitungan milidetik sehingga dampaknya tidak terasa.
+    """
 
     def __init__(self, engine) -> None:
         self.engine = engine
+        self._lock = asyncio.Lock()
 
     async def __call__(
         self,
@@ -37,9 +64,10 @@ class DatabaseMiddleware(BaseMiddleware):
     ) -> Any:
         from sqlmodel import Session
 
-        with Session(self.engine) as session:
-            data["session"] = session
-            return await handler(event, data)
+        async with self._lock:
+            with Session(self.engine) as session:
+                data["session"] = session
+                return await handler(event, data)
 
 
 class AuthMiddleware(BaseMiddleware):
@@ -80,8 +108,9 @@ class AuthMiddleware(BaseMiddleware):
 class UserMiddleware(BaseMiddleware):
     """Pastikan user terdaftar & simpan ctx agar handler tidak perlu query berulang."""
 
-    def __init__(self, default_timezone: str = "Asia/Jakarta") -> None:
+    def __init__(self, default_timezone: str = "Asia/Jakarta", export_dir: Path | None = None) -> None:
         self.default_timezone = default_timezone
+        self.export_dir = Path(export_dir) if export_dir is not None else None
 
     async def __call__(
         self,
@@ -105,6 +134,7 @@ class UserMiddleware(BaseMiddleware):
             user=user,
             owner_ids=tuple(),
             tz_name=user.timezone or self.default_timezone,
+            export_dir=self.export_dir,
         )
         return await handler(event, data)
 

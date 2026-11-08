@@ -475,15 +475,44 @@ Tidak perlu dibuat — sudah otomatis saat `/start`.
 
 ## 11. Export ke Excel
 
+### 11.1 File CSV otomatis (fitur baru)
+
+Kamu **tidak perlu** menjalankan apa pun. Setiap kali mencatat transaksi, bot
+langsung menambahkan baris ke file:
+
+```
+data/exports/ledger-<telegram_id>.csv
+```
+
+Buka file itu di Excel kapan saja — isinya selalu data terbaru. Kalau kamu
+`/undo` atau `/hapus`, baris di file ikut terhapus otomatis.
+
+Format kolom: `id, tanggal, jenis, kategori, akun, nominal, catatan`
+
+Mau unduh lewat Telegram?
+
+```
+/ledger
+```
+
+Bot mengirim file CSV lengkap (semua transaksi, semua bulan).
+
+### 11.2 Export per bulan
+
 ```
 /export            bulan ini
 /export 2026-09    bulan tertentu
 ```
 
-Bot mengirim file `keuangan-2026-11.csv`. Buka dengan Excel atau upload ke
-Google Sheets. Kolomnya: `id, tanggal, jenis, kategori, akun, nominal, catatan`.
+Bot mengirim file `keuangan-2026-11.csv`. Berguna untuk arsip bulanan atau
+laporan ke atasan/pasangan.
 
-Gunakan ini untuk analisis sendiri atau laporan keuangan tahunan.
+### 11.3 Catatan keamanan CSV
+
+Kalau catatan transaksi diawali `=`, `+`, `-`, atau `@`, bot menambahkan tanda
+`'` di depan saat menulis CSV. Ini mencegah Excel menjalankan isi sel sebagai
+formula (dikenal sebagai *CSV injection*). Di Excel kamu tetap melihat teks
+aslinya.
 
 ---
 
@@ -757,6 +786,7 @@ Copy `data/finance.db` dan `.env`. Selesai.
 | `/kategori` | kelola kategori |
 | `/budget` | kelola anggaran |
 | `/export [bulan]` | unduh CSV |
+| `/ledger` | unduh CSV semua transaksi |
 | `/id` | lihat user ID kamu |
 
 ---
