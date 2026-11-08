@@ -1,7 +1,7 @@
-# 💰 Finance Bot — Laporan Keuangan Pribadi via Telegram
+# Finance Bot via Telegram
 
 Bot Telegram untuk mencatat pemasukan/pengeluaran harian dan menghasilkan
-laporan bulanan. Cukup chat, tanpa aplikasi tambahan.
+laporan bulanan. 
 
 ```
 kopi 18rb          → pengeluaran Rp 18.000, kategori Makan
@@ -10,10 +10,7 @@ kemarin bensin 25.000 → otomatis tanggal kemarin
 makan 35k @Makan   → kategori dipaksa
 ```
 
-> 📖 **Baru pertama kali? Baca [TUTORIAL.md](TUTORIAL.md)** — panduan langkah
-> demi langkah dari membuat bot sampai pemakaian harian.
->
-> ⚡ Sudah paham? Langsung ke [Mulai cepat](#2-mulai-cepat).
+> **[TUTORIAL.md](TUTORIAL.md)** 
 
 ---
 
@@ -42,12 +39,12 @@ makan 35k @Makan   → kategori dipaksa
 
 ### 2.1 Buat bot di Telegram
 
-1. Chat [@BotFather](https://t.me/BotFather) → `/newbot` → ikuti instruksi.
+1. Chat [@BotFather](https://t.me/BotFather) → `/newbot`.
 2. Simpan **token** (bentuknya `123456789:AAH...`).
 
-### 2.2 Dapatkan user ID kamu
+### 2.2 user ID 
 
-Kirim pesan apa saja ke bot barumu, lalu buka di browser:
+Kirim pesan apa saja ke bot barumu, open browser:
 
 ```
 https://api.telegram.org/bot<TOKEN>/getUpdates
@@ -84,7 +81,7 @@ TELEGRAM_OWNER_ID=123456789
 python -m bot.main
 ```
 
-Lalu kirim `/start` ke bot. Selesai.
+Lalu kirim `/start` ke bot. 
 
 ---
 
@@ -102,8 +99,7 @@ Lalu kirim `/start` ke bot. Selesai.
 | `BACKUP_KEEP` | `7` | jumlah backup yang disimpan |
 | `DEBUG` | `false` | log verbose |
 
-> ⚠️ **`TELEGRAM_OWNER_ID` wajib diisi.** Tanpa whitelist, siapa pun yang
-> menemukan bot kamu bisa menulis ke database. Bot menolak start tanpa nilai ini.
+> ⚠️ **`TELEGRAM_OWNER_ID` wajib diisi.**
 
 ---
 
@@ -205,8 +201,7 @@ Telegram palsu, jadi alur `pesan masuk → parse → simpan → balas` ikut diuj
 
 ### QA probe (audit mandiri)
 
-Skrip di `scripts/qa_*.py` adalah audit adversarial — mencari bug, bukan
-membuktikan kode benar. Jalankan semuanya:
+Skrip di `scripts/qa_*.py` adalah audit adversarial. Jalankan semuanya:
 
 ```powershell
 python scripts/qa_probe.py            # parser & nominal
@@ -234,13 +229,13 @@ python scripts/probe_parser.py       # uji parser dengan kalimat sehari-hari
 
 ### Opsi A — PC sendiri (gratis)
 
-Supaya bot tetap hidup setelah terminal ditutup, jalankan lewat Task Scheduler:
+Agar bot tetap hidup setelah terminal ditutup, jalankan lewat Task Scheduler:
 
 ```powershell
 schtasks /create /tn "FinanceBot" /tr "C:\Users\RAZZ\source\repos\finance-bot\.venv\Scripts\python.exe -m bot.main" /sc onstart /ru SYSTEM
 ```
 
-Catatan: PC harus menyala dan tidak sleep.
+Catatan: PC harus menyala/not sleep.
 
 ### Opsi B — VPS Linux (disarankan)
 
@@ -297,27 +292,12 @@ Copy-Item data\backups\finance-20261020-030000.db data\finance.db -Force
 python -m bot.main
 ```
 
-> File `.db` adalah seluruh riwayat keuanganmu. Jangan commit ke Git
+> File `.db` adalah seluruh riwayat keuanganmu. **Jangan commit ke Git**
 > (sudah masuk `.gitignore`).
 
 ---
 
-## 9. Catatan teknis
-
-- **Uang disimpan sebagai integer rupiah** (`25000`, bukan `25000.0`) — tidak
-  ada error pembulatan.
-- **Waktu disimpan sebagai UTC** di database, ditampilkan dalam `TIMEZONE`.
-  Transaksi jam 00:30 WIB tetap tercatat di tanggal yang benar.
-- **Anti dobel**: `message_id` unik per user. Kalau Telegram mengirim ulang
-  update yang sama, transaksi tidak tercatat dua kali.
-- **Hanya boleh satu instance bot.** Dua proses polling membuat update
-  rebutan dan transaksi ganda.
-- **SQLite + WAL** cukup untuk puluhan ribu transaksi. Kalau nanti butuh
-  multi-user berat, pindah ke PostgreSQL (skema sudah siap).
-
----
-
-## 10. Troubleshooting
+## 9. Troubleshooting
 
 | Masalah | Penyebab & solusi |
 |---|---|
@@ -327,7 +307,7 @@ python -m bot.main
 | Bot diam saja | Cek `python -m bot.main` masih jalan; lihat log |
 | `Conflict: terminated by other getUpdates` | Ada 2 instance bot. Tutup salah satu |
 | Akses ditolak | User ID kamu tidak cocok dengan `TELEGRAM_OWNER_ID` |
-| Bot mati saat PC sleep | Normal. Pakai VPS atau atur power plan |
+| Bot mati saat PC sleep | Pakai VPS atau atur power plan |
 
 ---
 
