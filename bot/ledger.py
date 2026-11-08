@@ -532,6 +532,18 @@ def delete_category(session: Session, user: User, name: str) -> Category:
     category = find_category(session, user.id, name)
     if category is None:
         raise LedgerError(f"Kategori '{name}' tidak ditemukan.")
+    return delete_category_by_id(session, user, int(category.id))
+
+
+def delete_category_by_id(session: Session, user: User, category_id: int) -> Category:
+    """Hapus kategori berdasarkan id.
+
+    Dipakai UI yang punya id pasti; pencarian berdasarkan nama bisa salah
+    sasaran kalau nama yang sama dipakai untuk pemasukan dan pengeluaran.
+    """
+    category = session.get(Category, int(category_id))
+    if category is None or category.user_id != user.id:
+        raise LedgerError("Kategori tidak ditemukan.")
     used = session.exec(
         select(sa_func.count(Transaction.id)).where(
             Transaction.user_id == user.id, Transaction.category_id == category.id

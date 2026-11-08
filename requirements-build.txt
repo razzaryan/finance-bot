@@ -1,0 +1,10 @@
+# Dependensi khusus membangun installer Windows.
+# Pasang di venv yang sama setelah requirements.txt:
+#
+#   .\.venv\Scripts\python.exe -m pip install -r requirements-build.txt
+#
+# Inno Setup dipasang terpisah (bukan paket Python):
+#
+#   winget install JRSoftware.InnoSetup
+
+pyinstaller==6.22.3

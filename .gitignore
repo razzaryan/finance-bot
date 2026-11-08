@@ -16,3 +16,10 @@ data/
 testout.txt
 e2e_out.txt
 check_encoding.py
+
+# hasil build aplikasi desktop
+build/
+dist/
+
+# log lokal
+*.log

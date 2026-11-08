@@ -1,0 +1,113 @@
+KEUANGAN 1.0.0
+==============
+
+Aplikasi pencatatan keuangan pribadi untuk Windows.
+
+
+MULAI CEPAT
+-----------
+1. Buka Keuangan dari Start Menu atau ikon Desktop.
+2. Di kotak "Catat cepat", tulis transaksi lalu tekan Enter.
+
+   kopi 18rb
+   makan siang 35k
+   gaji 7.5jt
+   kemarin bensin 25.000
+
+3. Selesai. Saldo dan rekap hari ini langsung diperbarui.
+
+
+MENULIS TRANSAKSI
+-----------------
+Nominal bisa ditulis dengan banyak cara:
+
+   18rb      = 18.000
+   1,5jt     = 1.500.000
+   25.000    = 25.000
+   Rp25.000  = 25.000
+   kopi18rb  = 18.000 (tanpa spasi)
+
+Tanggal bisa disebut:
+
+   kemarin bensin 25rb
+   2 hari lalu parkir 5rb
+   15/10 makan 50rb
+
+Jenis transaksi ditebak dari kata yang dipakai:
+
+   gaji 5jt              -> masuk
+   terima transfer 200rb -> masuk
+   beli sepatu 300rb     -> keluar
+   +500rb dari jual motor -> masuk (tanda + memaksa masuk)
+   -50rb rokok           -> keluar (tanda - memaksa keluar)
+
+Kategori ditebak otomatis. Mau memaksa kategori tertentu?
+
+   kopi 18rb @Makan
+
+
+HALAMAN APLIKASI
+----------------
+Dashboard   Saldo, ringkasan bulan ini, transaksi hari ini, peringatan anggaran.
+Transaksi   Daftar semua transaksi. Filter per bulan/jenis, cari catatan.
+            Klik dua kali untuk mengubah, tombol Delete untuk menghapus.
+Laporan     Ringkasan bulanan, pengeluaran per kategori, tren 12 bulan.
+            Tombol Export CSV menyimpan laporan ke file.
+Anggaran    Batas pengeluaran per kategori. Peringatan muncul saat 80% terpakai.
+Kategori    Kelola kategori dan kata kuncinya.
+Pengaturan  Nama, zona waktu, tema, lokasi data, backup, impor database.
+
+
+DI MANA DATA SAYA?
+------------------
+    %APPDATA%\Keuangan\finance.db       database
+    %APPDATA%\Keuangan\exports\         file CSV yang diperbarui otomatis
+    %APPDATA%\Keuangan\backups\         backup harian (7 terakhir)
+
+Semua data tersimpan di komputer ini. Tidak ada yang dikirim ke internet.
+
+File CSV di folder exports bisa dibuka langsung di Excel. Isinya selalu sama
+dengan database, dan ikut berubah saat kamu menambah atau menghapus transaksi.
+
+Tombol "Buka folder data" ada di halaman Pengaturan.
+
+
+BACKUP
+------
+Aplikasi membuat backup otomatis sekali sehari saat dibuka. Untuk backup
+manual, buka Pengaturan lalu tekan "Backup sekarang".
+
+Simpan salinan folder %APPDATA%\Keuangan ke flashdisk atau cloud sesekali.
+Itu satu-satunya cara memulihkan data kalau komputer rusak.
+
+
+PINDAH DARI VERSI TELEGRAM
+--------------------------
+Buka Pengaturan, tekan "Impor database…", lalu pilih file finance.db dari
+versi bot Telegram. Database sekarang dibackup dulu sebelum diganti.
+
+
+MENCABUT APLIKASI
+-----------------
+Settings > Apps > Keuangan > Uninstall, atau lewat Control Panel.
+Saat instalasi kamu sudah memilih apakah data ikut dihapus atau disimpan.
+
+
+MASALAH UMUM
+------------
+Aplikasi tidak mau terbuka
+    Mungkin sudah berjalan. Cek taskbar. Kalau tidak ada, buka Task Manager
+    dan akhiri proses Keuangan.exe.
+
+Antivirus memblokir
+    Aplikasi ini tidak ditandatangani secara digital, jadi Windows atau
+    antivirus kadang waspada. Tekan "More info" > "Run anyway", atau
+    tambahkan folder aplikasi ke daftar pengecualian.
+
+Data terasa hilang setelah update
+    Data tidak pernah ada di folder aplikasi. Cek %APPDATA%\Keuangan.
+    Kalau memakai mode portable (ada file portable.txt di folder aplikasi),
+    data ada di folder data di sebelah Keuangan.exe.
+
+Lupa apa yang salah
+    Log ada di %APPDATA%\Keuangan\keuangan.log

@@ -1,6 +1,10 @@
-# 📖 Tutorial Lengkap — Finance Bot
+# 📖 Tutorial Lengkap — Bot Telegram Keuangan
 
 Panduan dari nol sampai bisa dipakai sehari-hari. Ikuti berurutan.
+
+> 🖥️ **Mau aplikasi Windows, bukan Telegram?** Tutorial ini khusus bot.
+> Untuk aplikasi desktop, baca [DESKTOP.md](DESKTOP.md).
+> Keduanya memakai database yang sama dan bisa saling impor.
 
 ---
 

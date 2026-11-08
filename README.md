@@ -1,7 +1,14 @@
-# Finance Bot via Telegram
+# Keuangan — Bot Telegram & Aplikasi Windows
 
-Bot Telegram untuk mencatat pemasukan/pengeluaran harian dan menghasilkan
-laporan bulanan. 
+Dua antarmuka, satu mesin pencatatan:
+
+| | |
+|---|---|
+| **Aplikasi Windows** | Aplikasi desktop sungguhan (Qt), installer + uninstaller, tanpa internet. → [DESKTOP.md](DESKTOP.md) |
+| **Bot Telegram** | Catat lewat chat dari HP. Butuh token bot. → [TUTORIAL.md](TUTORIAL.md) |
+
+Keduanya memakai logika yang sama (`bot/entry.py`, `bot/parser.py`,
+`bot/ledger.py`), jadi tebakan kategori dan angkanya selalu identik.
 
 ```
 kopi 18rb          → pengeluaran Rp 18.000, kategori Makan
@@ -10,25 +17,27 @@ kemarin bensin 25.000 → otomatis tanggal kemarin
 makan 35k @Makan   → kategori dipaksa
 ```
 
-> **[TUTORIAL.md](TUTORIAL.md)** 
+> **Aplikasi .exe:** [DESKTOP.md](DESKTOP.md)
+> **Versi Telegram:** [TUTORIAL.md](TUTORIAL.md)
 
 ---
 
 ## 1. Fitur
 
-| Fitur | Command |
-|---|---|
-| Catat pengeluaran / pemasukan | teks bebas, `/keluar`, `/masuk` |
-| Saldo & ringkasan bulan ini | `/saldo` |
-| Laporan bulanan + top kategori + perbandingan bulan lalu | `/laporan` |
-| Rekap harian | `/rekap` |
-| Anggaran bulanan + peringatan 80%/100% | `/budget` |
-| Kelola kategori (tambah, keyword, hapus) | `/kategori` |
-| Riwayat & pencarian | `/terakhir`, `/cari` |
-| Hapus salah catat | `/undo`, `/hapus <id>` |
-| Export CSV (buka di Excel) | `/export` |
-| **CSV ledger otomatis** — semua transaksi langsung masuk file CSV | `/ledger` |
-| Rekap otomatis tiap hari | scheduler |
+| Fitur | Command (Telegram) | Aplikasi desktop |
+|---|---|---|
+| Catat pengeluaran / pemasukan | teks bebas, `/keluar`, `/masuk` | kotak Catat cepat |
+| Saldo & ringkasan bulan ini | `/saldo` | halaman Dashboard |
+| Laporan bulanan + top kategori + perbandingan bulan lalu | `/laporan` | halaman Laporan |
+| Rekap harian | `/rekap` | kartu di Dashboard |
+| Anggaran bulanan + peringatan 80%/100% | `/budget` | halaman Anggaran |
+| Kelola kategori (tambah, keyword, hapus) | `/kategori` | halaman Kategori |
+| Riwayat & pencarian | `/terakhir`, `/cari` | halaman Transaksi |
+| Ubah catatan yang salah | — | klik dua kali di tabel |
+| Hapus salah catat | `/undo`, `/hapus <id>` | tombol Hapus / Delete / Undo |
+| Export CSV (buka di Excel) | `/export` | tombol Export CSV |
+| **CSV ledger otomatis** — semua transaksi langsung masuk file CSV | `/ledger` | diperbarui otomatis |
+| Rekap otomatis tiap hari | scheduler | tampil saat aplikasi dibuka |
 
 **Parser input** mendukung `18rb`, `18rb`, `18 ribu`, `18k`, `5jt`, `5 juta`,
 `1,5jt`, `2.5jt`, `25.000`, `Rp 25.000`, `+500rb`, `-100rb`.
@@ -36,6 +45,17 @@ makan 35k @Makan   → kategori dipaksa
 ---
 
 ## 2. Mulai cepat
+
+### 2.0 Aplikasi desktop (tanpa Telegram)
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m desktop
+```
+
+Atau pasang installer siap pakai: `dist\installer\Keuangan-Setup-1.0.0.exe`.
+Detail lengkap ada di [DESKTOP.md](DESKTOP.md). Bagian di bawah ini khusus
+versi Telegram.
 
 ### 2.1 Buat bot di Telegram
 
